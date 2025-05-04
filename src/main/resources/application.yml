@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/salaryIncrement
+    username: root
+    password: shreeram
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      auto-commit: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+    show-sql: true
+
+logging:
+  level:
+    org.hibernate.orm.deprecation: ERROR
+    org.hibernate.orm.connections.pooling: ERROR
+    com.zaxxer.hikari: ERROR
