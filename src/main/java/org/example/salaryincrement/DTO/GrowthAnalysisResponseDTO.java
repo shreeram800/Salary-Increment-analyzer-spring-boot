@@ -1,12 +1,13 @@
-package org.example.salaryincrement.Model;
+package org.example.salaryincrement.DTO;
+
 
 import lombok.Data;
-
+import org.example.salaryincrement.Model.Status;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-public class GrowthAnalysis {
+public class GrowthAnalysisResponseDTO {
 
     private Long userId;
     private LocalDate startDate;

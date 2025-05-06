@@ -28,7 +28,6 @@ public class Career {
     @Column(name = "career_start_date", nullable = false)
     private LocalDate careerStartDate;
 
-
     public Career() {
     }
 
