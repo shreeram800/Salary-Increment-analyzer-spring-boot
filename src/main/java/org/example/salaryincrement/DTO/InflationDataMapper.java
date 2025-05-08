@@ -8,7 +8,6 @@ public class InflationDataMapper {
 
     public InflationDataDTO toDTO(InflationData entity) {
         InflationDataDTO dto = new InflationDataDTO();
-        dto.setInflationDataId(entity.getInflationDataId());
         dto.setApplicableDate(entity.getApplicableDate());
         dto.setInflationRate(entity.getInflationRate());
         dto.setSource(entity.getSource());

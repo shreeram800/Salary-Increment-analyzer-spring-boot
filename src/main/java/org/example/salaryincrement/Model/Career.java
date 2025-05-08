@@ -21,12 +21,17 @@ public class Career {
     @Column(name = "career_name")
     private String careerName;
 
+    @Column(name = "company_name")
+    private String companyName;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "career_start_date", nullable = false)
     private LocalDate careerStartDate;
+
+
 
     public Career() {
     }

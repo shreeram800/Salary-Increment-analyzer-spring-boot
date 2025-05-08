@@ -8,5 +8,7 @@ import java.time.LocalDate;
 public class CreateCareerRequest {
     private Long userId;
     private String careerName;
+    private String companyName;
     private LocalDate careerStartDate;
+
 }

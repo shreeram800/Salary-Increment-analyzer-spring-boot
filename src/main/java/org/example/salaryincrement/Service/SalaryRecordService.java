@@ -66,6 +66,12 @@ public class SalaryRecordService {
         }
         repository.deleteById(id);
     }
+    public List<SalaryRecordResponseDTO> getSalaryRecordsByCareerId(Long careerId) {
+        return repository.findByCareer_CareerId(careerId).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+
+    }
 
     private SalaryRecordResponseDTO toResponseDTO(SalaryRecord record) {
         SalaryRecordResponseDTO dto = new SalaryRecordResponseDTO();

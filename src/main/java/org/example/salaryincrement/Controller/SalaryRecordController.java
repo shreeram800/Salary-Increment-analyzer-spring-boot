@@ -3,6 +3,7 @@ package org.example.salaryincrement.Controller;
 import lombok.RequiredArgsConstructor;
 import org.example.salaryincrement.DTO.SalaryRecordDTO;
 import org.example.salaryincrement.DTO.SalaryRecordResponseDTO;
+
 import org.example.salaryincrement.Service.SalaryRecordService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,13 @@ public class SalaryRecordController {
     @GetMapping("/{id}")
     public ResponseEntity<SalaryRecordResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
+    }
+
+    @GetMapping("/career/{careerId}")
+    public ResponseEntity<List<SalaryRecordResponseDTO>> getSalaryRecordsByCareerId(@PathVariable Long careerId) {
+        List<SalaryRecordResponseDTO> records = service.getSalaryRecordsByCareerId(careerId);
+        System.out.println(records.toString());
+        return ResponseEntity.ok(records);
     }
 
     @GetMapping

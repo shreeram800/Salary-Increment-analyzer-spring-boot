@@ -1,6 +1,7 @@
 package org.example.salaryincrement.Model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ import java.util.Objects;
 @Table(name = "salary_records")
 @Getter
 @Setter
+@AllArgsConstructor
 public class SalaryRecord {
 
 
@@ -36,14 +38,6 @@ public class SalaryRecord {
     public SalaryRecord() {
 
     }
-
-    public SalaryRecord(Career career, BigDecimal salaryAmount, LocalDate effectiveDate, String currency) {
-        this.career = career;
-        this.salaryAmount = salaryAmount;
-        this.effectiveDate = effectiveDate;
-        this.currency = currency;
-    }
-
 
     @Override
     public boolean equals(Object o) {

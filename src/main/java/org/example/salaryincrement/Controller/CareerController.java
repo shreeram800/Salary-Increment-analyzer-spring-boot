@@ -21,6 +21,7 @@ public class CareerController {
 
     @PostMapping
     public ResponseEntity<Career> createCareer(@RequestBody CreateCareerRequest career) {
+        System.out.println(career.getUserId());
         Career created = careerService.createCareer(career);
         return ResponseEntity.ok(created);
     }
@@ -39,6 +40,7 @@ public class CareerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Career> updateCareer(@PathVariable Long id, @RequestBody Career updatedCareer) {
+
         Career updated = careerService.updateCareer(id, updatedCareer);
         return ResponseEntity.ok(updated);
     }

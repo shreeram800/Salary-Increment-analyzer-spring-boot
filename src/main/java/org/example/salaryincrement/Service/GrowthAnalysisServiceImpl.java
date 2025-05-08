@@ -3,30 +3,34 @@ package org.example.salaryincrement.Service;
 import org.example.salaryincrement.DTO.GrowthAnalysisRequestDTO;
 import org.example.salaryincrement.DTO.GrowthAnalysisResponseDTO;
 import org.example.salaryincrement.Exceptions.GrowthAnalysisException;
-import org.example.salaryincrement.Model.InflationData;
-import org.example.salaryincrement.Model.SalaryRecord;
-import org.example.salaryincrement.Model.Status;
+import org.example.salaryincrement.Model.*;
 import org.example.salaryincrement.Repository.InflationDataRepository;
 import org.example.salaryincrement.Repository.SalaryRecordRepository;
+import org.example.salaryincrement.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
+
 @Service
-public class GrowthAnalysisServiceImpl  {
+public class GrowthAnalysisServiceImpl {
 
     private final InflationDataRepository inflationDataRepository;
     private final SalaryRecordRepository salaryRecordRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public GrowthAnalysisServiceImpl(InflationDataRepository inflationDataRepository,
-                                     SalaryRecordRepository salaryRecordRepository) {
+                                     SalaryRecordRepository salaryRecordRepository,
+                                     UserRepository userRepository) {
         this.inflationDataRepository = inflationDataRepository;
         this.salaryRecordRepository = salaryRecordRepository;
+        this.userRepository = userRepository;
     }
 
     public GrowthAnalysisResponseDTO analyzeGrowth(GrowthAnalysisRequestDTO requestDTO) {
@@ -38,23 +42,38 @@ public class GrowthAnalysisServiceImpl  {
             throw new GrowthAnalysisException("End date cannot be before start date.");
         }
 
-        SalaryRecord startRecord = getSalaryRecord(userId, startDate);
-        SalaryRecord endRecord = getSalaryRecord(userId, endDate);
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new GrowthAnalysisException("User not found with ID " + userId));
+
+        List<Career> careers = user.getCareers();
+
+        if (careers == null || careers.isEmpty()) {
+            throw new GrowthAnalysisException("No careers found for user ID " + userId);
+        }
+
+        List<SalaryRecord> allRecords = salaryRecordRepository.findAllByCareerIn(careers);
+
+        List<SalaryRecord> recordsInRange = allRecords.stream()
+                .filter(record -> !record.getEffectiveDate().isBefore(startDate) && !record.getEffectiveDate().isAfter(endDate))
+                .sorted(Comparator.comparing(SalaryRecord::getEffectiveDate))
+                .toList();
+
+        if (recordsInRange.size() < 2) {
+            throw new GrowthAnalysisException("Not enough salary records found between " + startDate + " and " + endDate);
+        }
+
+        SalaryRecord startRecord = recordsInRange.get(0); // earliest in range
+        SalaryRecord endRecord = recordsInRange.get(recordsInRange.size() - 1); // latest in range
 
         BigDecimal startingSalary = startRecord.getSalaryAmount();
         BigDecimal endingSalary = endRecord.getSalaryAmount();
 
         BigDecimal actualGrowthRate = calculateGrowthRate(startingSalary, endingSalary);
         BigDecimal requiredGrowthRate = calculateCumulativeInflation(startDate, endDate);
-
         Status status = determineStatus(actualGrowthRate, requiredGrowthRate);
 
-        return buildResponseDTO(userId, startDate, endDate, startingSalary, endingSalary, actualGrowthRate, requiredGrowthRate, status);
-    }
-
-    private SalaryRecord getSalaryRecord(Long userId, LocalDate date) {
-        return salaryRecordRepository.findByCareerCareerIdAndEffectiveDate(userId, date)
-                .orElseThrow(() -> new GrowthAnalysisException("Salary record not found for user " + userId + " on " + date));
+        return buildResponseDTO(userId, startDate, endDate, startingSalary, endingSalary,
+                actualGrowthRate, requiredGrowthRate, status);
     }
 
     private BigDecimal calculateGrowthRate(BigDecimal start, BigDecimal end) {
@@ -106,10 +125,12 @@ public class GrowthAnalysisServiceImpl  {
         dto.setEndDate(endDate);
         dto.setStartingSalary(startSalary);
         dto.setEndingSalary(endSalary);
-        dto.setActualGrowthRate(actual.setScale(2, RoundingMode.HALF_UP));
-        dto.setRequiredGrowthRate(required.setScale(2, RoundingMode.HALF_UP));
+        dto.setActualGrowthRate(actual);
+        dto.setRequiredGrowthRate(required);
         dto.setStatus(status);
-        dto.setSummaryMessage("Your salary growth is " + status.name().toLowerCase().replace("_", " ") + " compared to inflation.");
+        dto.setSummaryMessage("Your salary growth is " +
+                status.name().toLowerCase().replace("_", " ") +
+                " compared to inflation.");
         return dto;
     }
 }
